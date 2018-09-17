@@ -26,6 +26,7 @@ Invoke ". build/envsetup.sh" from your shell to add the following functions to y
 - sepgrep:   Greps on all local sepolicy files.
 - sgrep:     Greps on all local source files.
 - godir:     Go to the directory containing a file.
+- repofastsync: Parallel & superfast repo sync using ionice and SCHED_BATCH, and a bit of black magic
 
 Environment options:
 - SANITIZE_HOST: Set to 'true' to use ASAN for all host modules. Note that
@@ -1579,6 +1580,17 @@ function godir () {
         pathname=${lines[0]}
     fi
     \cd $T/$pathname
+}
+
+function repofastsync() {
+    case `uname -s` in
+        Darwin)
+            repo sync -c -f --force-sync --optimized-fetch --no-tags --no-clone-bundle --prune -j8 "$@"
+            ;;
+        *)
+            schedtool -B -n 1 -e ionice -n 1 `which repo` sync -c -f --force-sync --optimized-fetch --no-tags --no-clone-bundle --prune -j8 "$@"
+            ;;
+    esac
 }
 
 # Print colored exit condition
