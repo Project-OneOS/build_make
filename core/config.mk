@@ -1252,4 +1252,11 @@ DEFAULT_DATA_OUT_MODULES := ltp $(ltp_packages) $(kselftest_modules)
 # Make RECORD_ALL_DEPS readonly and also set it if deps-license is a goal.
 RECORD_ALL_DEPS :=$= $(filter true,$(RECORD_ALL_DEPS))$(filter deps-license,$(MAKECMDGOALS))
 
+ifneq ($(ONE_BUILD),)
+## We need to be sure the global selinux policies are included
+## last, to avoid accidental resetting by device configs
+$(eval include device/one/sepolicy/common/sepolicy.mk)
+endif
+
+
 include $(BUILD_SYSTEM)/dumpvar.mk
