@@ -293,10 +293,6 @@ endif
 # are specific to the user's build configuration.
 include $(BUILD_SYSTEM)/envsetup.mk
 
-ifneq ($(ONE_BUILD),)
-include vendor/one/config/BoardConfigOne.mk
-endif
-
 # Pruned directory options used when using findleaves.py
 # See envsetup.mk for a description of SCAN_EXCLUDE_DIRS
 FIND_LEAVES_EXCLUDES := $(addprefix --prune=, $(SCAN_EXCLUDE_DIRS) .repo .git)
@@ -1237,6 +1233,10 @@ dont_bother_goals := out \
     recoveryimage-nodeps \
     vbmetaimage-nodeps \
     product-graph dump-products
+
+ifneq ($(ONE_BUILD),)
+include vendor/one/config/BoardConfigOne.mk
+endif
 
 ifeq ($(CALLED_FROM_SETUP),true)
 include $(BUILD_SYSTEM)/android_soong_config_vars.mk
