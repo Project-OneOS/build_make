@@ -221,7 +221,7 @@ endif
 include $(BUILD_SYSTEM)/envsetup.mk
 
 ifeq ($(BOARD_USES_QCOM_HARDWARE),true)
-include $(TOPDIR)vendor/caf/build/core/BoardConfigQcom.mk
+include $(TOPDIR)vendor/oneos/build/core/BoardConfigQcom.mk
 endif
 
 # Pruned directory options used when using findleaves.py
@@ -1094,6 +1094,6 @@ include $(BUILD_SYSTEM)/dumpvar.mk
 
 # QCOM targets and pathmap
 ifeq ($(BOARD_USES_QCOM_HARDWARE),true)
-include $(TOPDIR)vendor/caf/build/core/qcom_target.mk
-include $(TOPDIR)vendor/caf/build/core/pathmap.mk
+include $(TOPDIR)vendor/oneos/build/core/qcom_target.mk
+include $(TOPDIR)vendor/oneos/build/core/pathmap.mk
 endif
