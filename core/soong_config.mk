@@ -179,7 +179,7 @@ $(foreach namespace,$(SOONG_CONFIG_NAMESPACES),\
   $(call end_json_map))
 $(call end_json_map)
 
-include vendor/caf/build/soong/soong_config.mk
+include vendor/oneos/build/soong/soong_config.mk
 
 $(call json_end)
 
