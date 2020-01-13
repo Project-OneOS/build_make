@@ -54,6 +54,6 @@ if [ -n "$BUILD_THUMBPRINT" ] ; then
   echo "ro.build.thumbprint=$BUILD_THUMBPRINT"
 fi
 
-echo "ro.caf.device=$CAF_DEVICE"
+echo "ro.one.device=$ONE_DEVICE"
 
 echo "# end build properties"

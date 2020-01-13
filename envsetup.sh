@@ -42,7 +42,7 @@ EOF
     local T=$(gettop)
     local A=""
     local i
-    for i in `cat $T/build/envsetup.sh | sed -n "/^[[:blank:]]*function /s/function \([a-z_]*\).*/\1/p" | sort | uniq`; do
+    for i in `cat $T/build/envsetup.sh $T/vendor/one/build/envsetup.sh | sed -n "/^[[:blank:]]*function /s/function \([a-z_]*\).*/\1/p" | sort | uniq`; do
       A="$A $i"
     done
     echo $A
@@ -53,8 +53,8 @@ function build_build_var_cache()
 {
     local T=$(gettop)
     # Grep out the variable names from the script.
-    cached_vars=(`cat $T/build/envsetup.sh | tr '()' '  ' | awk '{for(i=1;i<=NF;i++) if($i~/get_build_var/) print $(i+1)}' | sort -u | tr '\n' ' '`)
-    cached_abs_vars=(`cat $T/build/envsetup.sh | tr '()' '  ' | awk '{for(i=1;i<=NF;i++) if($i~/get_abs_build_var/) print $(i+1)}' | sort -u | tr '\n' ' '`)
+    cached_vars=(`cat $T/build/envsetup.sh $T/vendor/one/build/envsetup.sh | tr '()' '  ' | awk '{for(i=1;i<=NF;i++) if($i~/get_build_var/) print $(i+1)}' | sort -u | tr '\n' ' '`)
+    cached_abs_vars=(`cat $T/build/envsetup.sh $T/vendor/oneos/build/envsetup.sh | tr '()' '  ' | awk '{for(i=1;i<=NF;i++) if($i~/get_abs_build_var/) print $(i+1)}' | sort -u | tr '\n' ' '`)
     # Call the build system to dump the "<val>=<value>" pairs as a shell script.
     build_dicts_script=`\builtin cd $T; build/soong/soong_ui.bash --dumpvars-mode \
                         --vars="${cached_vars[*]}" \
@@ -137,11 +137,11 @@ function check_product()
         return
     fi
     if (echo -n $1 | grep -q -e "^aosp_") ; then
-        CAF_DEVICE=$(echo -n $1 | sed -e 's/^aosp_//g')
+        ONE_DEVICE=$(echo -n $1 | sed -e 's/^aosp_//g')
     else
-        CAF_DEVICE=
+        ONE_DEVICE=
     fi
-    export CAF_DEVICE
+    export ONE_DEVICE
 
         TARGET_PRODUCT=$1 \
         TARGET_BUILD_VARIANT= \
@@ -1869,3 +1869,5 @@ if [ -z ${CCACHE_EXEC} ]; then
 fi
 
 export ANDROID_BUILD_TOP=$(gettop)
+
+. $ANDROID_BUILD_TOP/vendor/one/build/envsetup.sh
