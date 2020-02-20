@@ -123,8 +123,6 @@ PRODUCT_PACKAGES += \
     libbinder_ndk \
     libc.bootstrap \
     libcamera2ndk \
-    libcamera_client \
-    libcameraservice \
     libc_malloc_debug \
     libc_malloc_hooks \
     libcutils \
@@ -231,7 +229,6 @@ PRODUCT_PACKAGES += \
     screencap \
     sdcard \
     secdiscard \
-    SecureElement \
     selinux_policy_system \
     sensorservice \
     service \
@@ -268,6 +265,11 @@ PRODUCT_PACKAGES += \
     wificond \
     wifi-service \
     wm \
+
+ifneq ($(TARGET_HAS_LOW_RAM), true)
+PRODUCT_PACKAGES += \
+    SecureElement
+endif
 
 # VINTF data for system image
 PRODUCT_PACKAGES += \
