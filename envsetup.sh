@@ -31,6 +31,12 @@ Invoke ". build/envsetup.sh" from your shell to add the following functions to y
 - pathmod:    Get the directory containing a module.
 - refreshmod: Refresh list of modules for allmod/gomod.
 
+EOF
+
+    __print_caf_functions_help
+
+cat <<EOF
+
 Environment options:
 - SANITIZE_HOST: Set to 'true' to use ASAN for all host modules. Note that
                  ASAN_OPTIONS=detect_leaks=0 will be set by default until the
