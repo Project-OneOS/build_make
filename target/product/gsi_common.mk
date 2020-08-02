@@ -33,9 +33,9 @@ PRODUCT_PRODUCT_PROPERTIES += \
     ro.apex.updatable=false
 
 # Additional settings used in all AOSP builds
-PRODUCT_PRODUCT_PROPERTIES += \
+PRODUCT_PROPERTY_OVERRIDES := \
     ro.config.ringtone=Ring_Synth_04.ogg \
-    ro.config.notification_sound=pixiedust.ogg \
+    ro.config.notification_sound=pixiedust.ogg
 
 # The mainline checking whitelist, should be clean up
 PRODUCT_ARTIFACT_PATH_REQUIREMENT_WHITELIST += \
@@ -91,8 +91,6 @@ PRODUCT_PACKAGES += \
 
 # Telephony:
 #   Provide a APN configuration to GSI product
-PRODUCT_COPY_FILES += \
-    device/sample/etc/apns-full-conf.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/apns-conf.xml
 
 # NFC:
 #   Provide a libnfc-nci.conf to GSI product

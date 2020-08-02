@@ -92,7 +92,7 @@ all_copied_headers: $(ALL_COPIED_HEADERS)
 ifdef has_dup_copy_headers
   has_dup_copy_headers :=
   ifneq ($(BUILD_BROKEN_DUP_COPY_HEADERS),true)
-    $(error duplicate header copies are no longer allowed. For more information about headers, see: https://android.googlesource.com/platform/build/soong/+/master/docs/best_practices.md#headers)
+    $(warning duplicate header copies are no longer allowed. For more information about headers, see: https://android.googlesource.com/platform/build/soong/+/master/docs/best_practices.md#headers)
   endif
 endif
 
@@ -207,6 +207,7 @@ define generate-common-build-props
 	PRODUCT_MANUFACTURER="$(PRODUCT_MANUFACTURER)" \
 	PRODUCT_MODEL="$(PRODUCT_MODEL)" \
 	PRODUCT_NAME="$(TARGET_PRODUCT)" \
+	$(PRODUCT_BUILD_PROP_OVERRIDES) \
 	$(call generate-common-build-props-with-product-vars-set,$(1),$(2))
 endef
 
@@ -221,6 +222,7 @@ define generate-common-build-props-with-product-vars-set
 	PLATFORM_SDK_VERSION="$(PLATFORM_SDK_VERSION)" \
 	PLATFORM_VERSION="$(PLATFORM_VERSION)" \
 	TARGET_BUILD_TYPE="$(TARGET_BUILD_VARIANT)" \
+	$(PRODUCT_BUILD_PROP_OVERRIDES) \
 	bash $(BUILDINFO_COMMON_SH) "$(1)" >> $(2)
 endef
 
@@ -309,7 +311,7 @@ BUILD_VERSION_TAGS += $(BUILD_KEYS)
 BUILD_VERSION_TAGS := $(subst $(space),$(comma),$(sort $(BUILD_VERSION_TAGS)))
 
 # A human-readable string that descibes this build in detail.
-build_desc := $(TARGET_PRODUCT)-$(TARGET_BUILD_VARIANT) $(PLATFORM_VERSION) $(BUILD_ID) $(BUILD_NUMBER_FROM_FILE) $(BUILD_VERSION_TAGS)
+build_desc := $(BUILD_ID)
 $(intermediate_system_build_prop): PRIVATE_BUILD_DESC := $(build_desc)
 
 # The string used to uniquely identify the combined build and product; used by the OTA server.
@@ -393,6 +395,7 @@ endif
 	        PRODUCT_MODEL="$(PRODUCT_SYSTEM_MODEL)" \
 	        PRODUCT_NAME="$(PRODUCT_SYSTEM_NAME)" \
 	        PRODUCT_DEVICE="$(PRODUCT_SYSTEM_DEVICE)" \
+		$(PRODUCT_BUILD_PROP_OVERRIDES) \
 	        $(call generate-common-build-props-with-product-vars-set,system,$@)
 	$(hide) TARGET_BUILD_TYPE="$(TARGET_BUILD_VARIANT)" \
 	        TARGET_BUILD_FLAVOR="$(TARGET_BUILD_FLAVOR)" \
@@ -400,6 +403,7 @@ endif
 		ONE_DEVICE="$(TARGET_DEVICE)" \
 	        PRODUCT_DEFAULT_LOCALE="$(call get-default-product-locale,$(PRODUCT_LOCALES))" \
 	        PRODUCT_DEFAULT_WIFI_CHANNELS="$(PRODUCT_DEFAULT_WIFI_CHANNELS)" \
+		PRIVATE_BUILD_DESC="$(PRIVATE_BUILD_DESC)" \
 	        BUILD_ID="$(BUILD_ID)" \
 	        BUILD_KEYS="$(BUILD_KEYS)" \
 	        DISPLAY_BUILD_NUMBER="$(DISPLAY_BUILD_NUMBER)" \
@@ -411,6 +415,7 @@ endif
 	        AB_OTA_UPDATER="$(AB_OTA_UPDATER)" \
 	        PLATFORM_VERSION="$(PLATFORM_VERSION)" \
 	        PLATFORM_SECURITY_PATCH="$(PLATFORM_SECURITY_PATCH)" \
+	        PLATFORM_SECURITY_PATCH_ONE="$(PLATFORM_SECURITY_PATCH_ONE)" \
 	        PLATFORM_BASE_OS="$(PLATFORM_BASE_OS)" \
 	        PLATFORM_SDK_VERSION="$(PLATFORM_SDK_VERSION)" \
 	        PLATFORM_PREVIEW_SDK_VERSION="$(PLATFORM_PREVIEW_SDK_VERSION)" \
@@ -466,6 +471,12 @@ $(INSTALLED_BUILD_PROP_TARGET): $(intermediate_system_build_prop) $(INSTALLED_RE
 INSTALLED_VENDOR_BUILD_PROP_TARGET := $(TARGET_OUT_VENDOR)/build.prop
 ALL_DEFAULT_INSTALLED_MODULES += $(INSTALLED_VENDOR_BUILD_PROP_TARGET)
 
+ifdef TARGET_VENDOR_PROP
+vendor_prop_files := $(TARGET_VENDOR_PROP)
+else
+vendor_prop_files := $(wildcard $(TARGET_DEVICE_DIR)/vendor.prop)
+endif
+
 ifdef property_overrides_split_enabled
 FINAL_VENDOR_BUILD_PROPERTIES += \
     $(call collapse-pairs, $(PRODUCT_PROPERTY_OVERRIDES))
@@ -473,7 +484,7 @@ FINAL_VENDOR_BUILD_PROPERTIES := $(call uniq-pairs-by-first-component, \
     $(FINAL_VENDOR_BUILD_PROPERTIES),=)
 endif  # property_overrides_split_enabled
 
-$(INSTALLED_VENDOR_BUILD_PROP_TARGET): $(BUILDINFO_COMMON_SH) $(intermediate_system_build_prop)
+$(INSTALLED_VENDOR_BUILD_PROP_TARGET): $(BUILDINFO_COMMON_SH) $(intermediate_system_build_prop) $(vendor_prop_files)
 	@echo Target vendor buildinfo: $@
 	@mkdir -p $(dir $@)
 	$(hide) echo > $@
@@ -506,6 +517,16 @@ endif
 	        echo "#" >> $@;
 	$(hide) cat $(INSTALLED_ANDROID_INFO_TXT_TARGET) | grep 'require version-' | sed -e 's/require version-/ro.build.expect./g' >> $@
 ifdef property_overrides_split_enabled
+	$(hide) $(foreach file,$(vendor_prop_files), \
+	    if [ -f "$(file)" ]; then \
+	        echo Target vendor properties from: "$(file)"; \
+	        echo "" >> $@; \
+	        echo "#" >> $@; \
+	        echo "# from $(file)" >> $@; \
+	        echo "#" >> $@; \
+	        cat $(file) >> $@; \
+	        echo "# end of $(file)" >> $@; \
+	    fi;)
 	$(hide) $(foreach line,$(FINAL_VENDOR_BUILD_PROPERTIES), \
 	    echo "$(line)" >> $@;)
 endif  # property_overrides_split_enabled
@@ -557,12 +578,18 @@ endif  # BOARD_USES_PRODUCTIMAGE
 INSTALLED_ODM_BUILD_PROP_TARGET := $(TARGET_OUT_ODM)/etc/build.prop
 ALL_DEFAULT_INSTALLED_MODULES += $(INSTALLED_ODM_BUILD_PROP_TARGET)
 
+ifdef TARGET_ODM_PROP
+odm_prop_files := $(TARGET_ODM_PROP)
+else
+odm_prop_files := $(wildcard $(TARGET_DEVICE_DIR)/odm.prop)
+endif
+
 FINAL_ODM_BUILD_PROPERTIES += \
     $(call collapse-pairs, $(PRODUCT_ODM_PROPERTIES))
 FINAL_ODM_BUILD_PROPERTIES := $(call uniq-pairs-by-first-component, \
     $(FINAL_ODM_BUILD_PROPERTIES),=)
 
-$(INSTALLED_ODM_BUILD_PROP_TARGET): $(BUILDINFO_COMMON_SH)
+$(INSTALLED_ODM_BUILD_PROP_TARGET): $(BUILDINFO_COMMON_SH) $(odm_prop_files)
 	@echo Target odm buildinfo: $@
 	@mkdir -p $(dir $@)
 	$(hide) echo > $@
@@ -570,6 +597,16 @@ $(INSTALLED_ODM_BUILD_PROP_TARGET): $(BUILDINFO_COMMON_SH)
 	$(hide) echo ro.odm.product.cpu.abilist32="$(TARGET_CPU_ABI_LIST_32_BIT)">>$@
 	$(hide) echo ro.odm.product.cpu.abilist64="$(TARGET_CPU_ABI_LIST_64_BIT)">>$@
 	$(hide) $(call generate-common-build-props,odm,$@)
+	$(hide) $(foreach file,$(odm_prop_files), \
+	    if [ -f "$(file)" ]; then \
+	        echo Target odm properties from: "$(file)"; \
+	        echo "" >> $@; \
+	        echo "#" >> $@; \
+	        echo "# from $(file)" >> $@; \
+	        echo "#" >> $@; \
+	        cat $(file) >> $@; \
+	        echo "# end of $(file)" >> $@; \
+	    fi;)
 	$(hide) echo "#" >> $@; \
 	        echo "# ADDITIONAL ODM BUILD PROPERTIES" >> $@; \
 	        echo "#" >> $@;
@@ -918,6 +955,11 @@ endif
 INTERNAL_KERNEL_CMDLINE := $(strip $(INTERNAL_KERNEL_CMDLINE) buildvariant=$(TARGET_BUILD_VARIANT) $(VERITY_KEYID))
 ifdef INTERNAL_KERNEL_CMDLINE
 INTERNAL_BOOTIMAGE_ARGS += --cmdline "$(INTERNAL_KERNEL_CMDLINE)"
+endif
+
+ifneq (,$(PLATFORM_SECURITY_PATCH_OVERRIDE))
+      PLATFORM_SECURITY_PATCH_ONE := $(PLATFORM_SECURITY_PATCH)
+      PLATFORM_SECURITY_PATCH := $(PLATFORM_SECURITY_PATCH_OVERRIDE)
 endif
 
 INTERNAL_MKBOOTIMG_VERSION_ARGS := \
@@ -1836,6 +1878,16 @@ $(RECOVERY_INSTALL_OTA_KEYS): $(SOONG_ZIP) $(OTA_PUBLIC_KEYS) $(extra_keys)
 
 RECOVERYIMAGE_ID_FILE := $(PRODUCT_OUT)/recovery.id
 
+ifneq ($(TARGET_PREBUILT_RECOVERY_RAMDISK_CPIO),)
+define build-recoveryramdisk
+  @echo -e ${CL_CYN}"----- Extracting recovery ramdisk ------"${CL_RST}
+  $(hide) mkdir -p $(TARGET_RECOVERY_OUT)
+  $(hide) mkdir -p $(TARGET_RECOVERY_ROOT_OUT)
+  $(hide) rm -rf $(TARGET_RECOVERY_ROOT_OUT)/*
+  $(hide) cp $(TARGET_PREBUILT_RECOVERY_RAMDISK_CPIO) $(OUT_DIR)/prebuilt_ramdisk-recovery.cpio
+  $(hide) cd $(TARGET_RECOVERY_ROOT_OUT) && cpio -id < $(OUT_DIR)/prebuilt_ramdisk-recovery.cpio && cd -
+endef
+else
 define build-recoveryramdisk
   $(hide) mkdir -p $(TARGET_RECOVERY_OUT)
   $(hide) mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/sdcard $(TARGET_RECOVERY_ROOT_OUT)/tmp
@@ -1868,6 +1920,7 @@ define build-recoveryramdisk
   $(hide) ln -sf prop.default $(TARGET_RECOVERY_ROOT_OUT)/default.prop
   $(BOARD_RECOVERY_IMAGE_PREPARE)
 endef
+endif
 
 RECOVERYIMAGE_ID_FILE := $(PRODUCT_OUT)/recovery.id
 # $(1): output file

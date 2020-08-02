@@ -207,6 +207,10 @@ android
 org\.codeaurora\..*
 
 ###################################################
+# Oneplus 
+net\.oneplus\..*
+
+###################################################
 # apache-xml.jar
 org\.apache\.xml\.res
 org\.apache\.xml\.utils

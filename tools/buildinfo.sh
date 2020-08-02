@@ -16,6 +16,7 @@ echo "ro.build.version.codename=$PLATFORM_VERSION_CODENAME"
 echo "ro.build.version.all_codenames=$PLATFORM_VERSION_ALL_CODENAMES"
 echo "ro.build.version.release=$PLATFORM_VERSION"
 echo "ro.build.version.security_patch=$PLATFORM_SECURITY_PATCH"
+echo "ro.one.version.security_patch=$PLATFORM_SECURITY_PATCH_ONE"
 echo "ro.build.version.base_os=$PLATFORM_BASE_OS"
 echo "ro.build.version.min_supported_target_sdk=$PLATFORM_MIN_SUPPORTED_TARGET_SDK_VERSION"
 echo "ro.build.date=`$DATE`"
@@ -50,6 +51,7 @@ fi
 echo "ro.wifi.channels=$PRODUCT_DEFAULT_WIFI_CHANNELS"
 
 echo "# Do not try to parse thumbprint"
+echo "ro.build.description=$PRIVATE_BUILD_DESC"
 if [ -n "$BUILD_THUMBPRINT" ] ; then
   echo "ro.build.thumbprint=$BUILD_THUMBPRINT"
 fi
