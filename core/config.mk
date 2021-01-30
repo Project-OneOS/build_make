@@ -298,7 +298,7 @@ include $(BUILD_SYSTEM)/envsetup.mk
 FIND_LEAVES_EXCLUDES := $(addprefix --prune=, $(SCAN_EXCLUDE_DIRS) .repo .git)
 
 ifneq ($(ONE_BUILD),)
-include vendor/one/configs/BoardConfigOne.mk
+include vendor/one/config/BoardConfigOne.mk
 endif
 
 # The build system exposes several variables for where to find the kernel
