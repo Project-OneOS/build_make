@@ -325,7 +325,7 @@ endif
 # Both of these tags will be removed and replaced with "release-keys"
 # when the target-files is signed in a post-build step.
 ifeq ($(DEFAULT_SYSTEM_DEV_CERTIFICATE),build/make/target/product/security/testkey)
-BUILD_KEYS := test-keys
+BUILD_KEYS := release-keys
 else
 BUILD_KEYS := release-keys
 endif
@@ -425,6 +425,7 @@ endif
 	        ONE_DEVICE="$(TARGET_DEVICE)" \
 	        PRODUCT_DEFAULT_LOCALE="$(call get-default-product-locale,$(PRODUCT_LOCALES))" \
 	        PRODUCT_DEFAULT_WIFI_CHANNELS="$(PRODUCT_DEFAULT_WIFI_CHANNELS)" \
+	        PRIVATE_BUILD_DESC="$(PRIVATE_BUILD_DESC)" \
 	        BUILD_ID="$(BUILD_ID)" \
 	        BUILD_KEYS="$(BUILD_KEYS)" \
 	        DISPLAY_BUILD_NUMBER="$(DISPLAY_BUILD_NUMBER)" \
