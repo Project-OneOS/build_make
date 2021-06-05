@@ -250,3 +250,24 @@ org\.chromium\.arc\..*
 ###################################################
 # One Display
 vendor.one.display.*
+
+###################################################
+# Oneplus 
+net\.oneplus\..*
+
+###################################################
+# QCOM WFD
+com\.qualcomm\.wfd
+com\.qualcomm\.wfd\..*
+
+###################################################
+# CodeAurora IMS functionality needed by frameworks/opt/telephony
+# as part of "ims-ext-common"
+org\.codeaurora\.ims.*
+# telephony-ext:
+org\.codeaurora\.internal.*
+
+###################################################
+# IFAA Manager used for Alipay and/or WeChat payment
+org\.ifaa\.android\.manager.*
+com\.quicinc\..*
